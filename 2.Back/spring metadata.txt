@@ -1,0 +1,8 @@
+gradle - groovy
+java
+spring boot 3.4.1
+project metadata jdk 21
+spring web
+spring data jpa
+spring boot dev tools
+lombok

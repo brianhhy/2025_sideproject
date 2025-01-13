@@ -3,6 +3,11 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-route
 import Sidebar from "./components/Sidebar";
 import Contents from "./components/Contents";
 import LoginSignup from "./components/Login-Signup";
+import { pdfjs } from "react-pdf";
+import PdfViewerTest from "./components/PdfViewerTest"
+// PDF.js Worker 설정
+pdfjs.GlobalWorkerOptions.workerSrc = `public/pdf.worker.min.js`;
+
 
 const Home = () => {
   const navigate = useNavigate();
@@ -28,11 +33,6 @@ const Home = () => {
 const Memo = ({ menuItems, handleMenuClick }) => {
   return (
     <div className="flex w-full h-screen">
-      <Sidebar
-        menuItems={menuItems} // Sidebar에 메뉴 전달
-        onMenuItemClick={handleMenuClick} // 클릭 이벤트 전달
-        className="flex-shrink-0 w-1/4" // 고정된 너비 설정
-      />
       <Contents
         menuItems={menuItems} // Contents에 메뉴 전달
         handleMenuClick={handleMenuClick} // Sidebar의 handleMenuClick 전달
@@ -48,11 +48,11 @@ const App = () => {
     { name: "1-1", subItems: ["물리", "수학", "과학"] },
     { name: "1-2", subItems: ["국어", "영어", "화학"] },
     { name: "2-1", subItems: ["체육", "생명과학", "일본어"] },
-    { name: "2-2", subItems: ["물리", "수학", "과학"] },
-    { name: "3-1", subItems: ["물리", "수학", "과학"] },
-    { name: "3-2", subItems: ["물리", "수학", "과학"] },
-    { name: "4-1", subItems: ["물리", "수학", "과학"] },
-    { name: "4-2", subItems: ["물리", "수학", "과학"] },
+    { name: "2-2", subItems: ["123", "456", "789"] },
+    { name: "3-1", subItems: ["327", "934", "457"] },
+    { name: "3-2", subItems: ["136", "248", "741"] },
+    { name: "4-1", subItems: ["721", "329", "158"] },
+    { name: "4-2", subItems: ["264", "235", "369"] },
   ];
 
   const handleMenuClick = (index) => {

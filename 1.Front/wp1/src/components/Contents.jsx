@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar"; // Sidebar 컴포넌트 불러오기
 import { Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
+import { useNavigate } from "react-router-dom";
 
 // 랜덤 색상 생성 함수
 const getRandomColor = () => {
@@ -18,6 +19,8 @@ const Contents = ({ menuItems = [] }) => {
   const [activeContent, setActiveContent] = useState(null); // Sidebar에서 전달된 콘텐츠
   const [colorMap, setColorMap] = useState({}); // 색상 저장 상태
   const [pdfUrl, setPdfUrl] = useState(null); // PDF URL 상태
+  const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태
+  const navigate = useNavigate(); // 라우팅을 위한 navigate
 
   // 색상 초기화
   useEffect(() => {
@@ -57,25 +60,17 @@ const Contents = ({ menuItems = [] }) => {
         {/* 새 요소 추가 */}
         <div
           className="w-full max-w-[200px] h-[300px] border border-dashed border-gray-400 bg-white flex flex-col justify-center items-center cursor-pointer"
-          onClick={() => document.getElementById("fileInput").click()}
+          onClick={() => setIsModalOpen(true)} // 모달 열기
         >
-          <span className="text-gray-500 text-lg">책 불러오기</span>
-          <input
-            type="file"
-            id="fileInput"
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files[0];
-              if (file) {
-                alert(`파일 선택됨: ${file.name}`);
-              }
-            }}
-          />
+          <span className="text-gray-500 text-lg text-center">
+            새 노트 <br />
+            또는 <br />
+            노트 불러오기
+          </span>
         </div>
       </div>
     );
   };
-  
 
   // PDF 클릭 처리 함수
   const handlePdfClick = (url) => {
@@ -178,6 +173,30 @@ const Contents = ({ menuItems = [] }) => {
           )}
         </div>
       </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-[400px] text-center">
+            <h2 className="text-lg font-bold mb-4">옵션 선택</h2>
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg mb-4 w-full"
+              onClick={() => navigate("/memo/docs")} // 새 노트 추가 라우팅
+            >
+              새 노트 추가
+            </button>
+            <button
+              className="bg-gray-500 text-white px-4 py-2 rounded-lg w-full"
+              onClick={() => {
+                setIsModalOpen(false);
+                document.getElementById("fileInput").click(); // 파일 탐색기 열기
+              }}
+            >
+              노트 불러오기
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

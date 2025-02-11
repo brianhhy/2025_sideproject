@@ -36,5 +36,11 @@ Google Cloud Storage를 사용하여 파일 업로드 및 관리합니다.
 .env와 google_cloud_storage_key.json 파일은 Git에 푸시하지 마세요!
 .gitignore에 추가하여 보안을 유지하세요.
 
+---
+
+##### ✅인텔리제이 Backend 부팅 설정(필요시)
+
+build.gradle 우클릭후 Link Gradle Project 클릭
+
 
 

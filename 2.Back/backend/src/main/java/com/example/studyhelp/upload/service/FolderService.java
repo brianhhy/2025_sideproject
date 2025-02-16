@@ -11,6 +11,7 @@ import com.example.studyhelp.upload.repository.FolderRepositoryCustom;
 import com.example.studyhelp.upload.request.CreateFolderRequest;
 import com.example.studyhelp.upload.request.FindFolderRequest;
 import com.example.studyhelp.upload.request.RenameFolderRequest;
+import com.example.studyhelp.upload.response.FolderDataResponseDto;
 import com.example.studyhelp.upload.response.FolderResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -83,6 +84,22 @@ public class FolderService {
         List<FolderResponseDto> subFoldersInfo = null;
 
         subFoldersInfo = folderRepositoryCustom.findSubFolders(request.getParentFolderId(), memberId);
+
+        if (subFoldersInfo == null) {
+            throw new FolderNotFoundException();
+        }
+
+        return subFoldersInfo;
+    }
+
+    @Transactional(readOnly = true)
+    public List<FolderDataResponseDto> findFolder2(FindFolderRequest request, Long memberId) {
+        // 사용자가 존재하는지 확인
+
+        log.info("FindFolderRequest = {}", request);
+
+        List<FolderDataResponseDto> subFoldersInfo = null;
+        subFoldersInfo = folderRepositoryCustom.findSubFoldersAll(request.getParentFolderId(), memberId);
 
         if (subFoldersInfo == null) {
             throw new FolderNotFoundException();

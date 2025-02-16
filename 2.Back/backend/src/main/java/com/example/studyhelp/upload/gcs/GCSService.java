@@ -6,6 +6,7 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -16,9 +17,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 public class GCSService {
 
     @Value("${spring.cloud.gcp.storage.bucket}")
@@ -61,5 +64,18 @@ public class GCSService {
         );
 
         return signedUrl.toString();
+    }
+
+    //파일을 String으로 변환
+    public String readFileAsString(String storedFileName) {
+        // GCS에서 파일 가져오기
+        Blob blob = storage.get(bucketName, storedFileName);
+        log.info("readFileAsString");
+        if (blob == null) {
+            throw new RuntimeException("파일을 찾을 수 없음: " + storedFileName);
+        }
+
+        // 파일을 String으로 변환 (UTF-8 인코딩)
+        return new String(blob.getContent(), StandardCharsets.UTF_8);
     }
 }

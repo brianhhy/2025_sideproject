@@ -8,6 +8,7 @@ import com.example.studyhelp.upload.gcs.GCSService;
 import com.example.studyhelp.upload.repository.FileRepository;
 import com.example.studyhelp.upload.repository.FolderRepository;
 import com.example.studyhelp.upload.request.FindFilesRequest;
+import com.example.studyhelp.upload.request.UploadFileRequest;
 import com.example.studyhelp.upload.response.FileResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,7 +45,7 @@ public class FileService {
 
     //파일생성
     @Transactional
-    public void uploadFile(MultipartFile file,Long folderId, Long memberId){
+    public void uploadFile(UploadFileRequest request, Long folderId, Long memberId){
 
         log.info("call uploadFile Function");
 
@@ -55,13 +57,28 @@ public class FileService {
                         () -> new IllegalStateException("Folder not found with id: " + folderId));
             }
 
-            File findFile = File.builder()
-                    .originalFileName(file.getOriginalFilename())
+            File createdFile = File.builder()
+                    .originalFileName(request.getFileName())
                     .memberId(memberId)
                     .parentFolder(folder).build();
 
-            folder.addFile(findFile);
+            folder.addFile(createdFile);
             folderRepository.save(folder);
+            gcsService.uploadObject(request.getFile(), createdFile.getStoredName());
+
+        }catch (Exception e){
+            log.info("error: ",e);
+            throw new FileNotUploadException();
+        }
+    }
+
+    @Transactional
+    public void updateFile(MultipartFile file,Long fileId, Long memberId){
+
+        log.info("call updateFile Function");
+
+        try{
+            File findFile = fileRepository.findFileByIdAndAndMemberId(fileId, memberId).orElseThrow(() -> new FileNotFoundException());
             gcsService.uploadObject(file, findFile.getStoredName());
 
         }catch (Exception e){
@@ -79,6 +96,14 @@ public class FileService {
         return url;
     }
 
+    @Transactional(readOnly = true)
+    public String getFileToText(Long fileId,Long memberId){
+        File findFile = fileRepository.findFileByIdAndAndMemberId(fileId, memberId).orElseThrow(() -> new FileNotFoundException());
+        String storedName = findFile.getStoredName();
+        String text = gcsService.readFileAsString(storedName);
+//        log.info("getFileToText = {}",text);
+        return text;
+    }
 
     //파일 삭제
     @Transactional

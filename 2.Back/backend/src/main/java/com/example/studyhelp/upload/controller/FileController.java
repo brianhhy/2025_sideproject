@@ -5,6 +5,7 @@ import com.example.studyhelp.sign.entity.Member;
 import com.example.studyhelp.sign.response.ApiResponseWrapper;
 import com.example.studyhelp.sign.service.MemberService;
 import com.example.studyhelp.upload.request.FindFilesRequest;
+import com.example.studyhelp.upload.request.UpdateFileRequest;
 import com.example.studyhelp.upload.request.UploadFileRequest;
 import com.example.studyhelp.upload.response.FileResponseDto;
 import com.example.studyhelp.upload.service.FileService;
@@ -50,10 +51,27 @@ public class FileController {
             throw new MemberNotFoundException();
         }
 
+        log.info("UploadFileRequest = {}",request);
+
         // 파일 처리 로직
-        fileService.uploadFile(request.getFile(), request.getFolderId(), member.getId());
+        fileService.uploadFile(request, request.getFolderId(), member.getId());
 
         return ResponseEntity.ok(new ApiResponseWrapper<>(true, true, "파일 업로드 성공"));
+    }
+
+    @PostMapping("/updateFile")
+    public ResponseEntity<ApiResponseWrapper<Boolean>> updateFile(
+            @ModelAttribute UpdateFileRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        Member member = memberService.findByUserName(userDetails.getUsername());
+        if (member == null) {
+            throw new MemberNotFoundException();
+        }
+        // 파일 처리 로직
+        fileService.updateFile(request.getFile(), request.getFileId(), member.getId());
+
+        return ResponseEntity.ok(new ApiResponseWrapper<>(true, true, "파일 업데이트 성공"));
     }
 
     @GetMapping("/getFileUrl")
@@ -69,6 +87,21 @@ public class FileController {
         // 파일 처리 로직
         String fileUrl = fileService.getFileUrl(fileId, member.getId());
         return ResponseEntity.ok(new ApiResponseWrapper<>(fileUrl, true, "파일 링크 생성 성공"));
+    }
+
+    @GetMapping("/getFileToText")
+    public ResponseEntity<ApiResponseWrapper<String>> getFileToText(
+            @Param("fileId")Long fileId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        Member member = memberService.findByUserName(userDetails.getUsername());
+        if (member == null) {
+            throw new MemberNotFoundException();
+        }
+
+        // 파일 처리 로직
+        String text = fileService.getFileToText(fileId,member.getId());
+        return ResponseEntity.ok(new ApiResponseWrapper<>(text, true, "파일 텍스트화 성공"));
     }
 
 }

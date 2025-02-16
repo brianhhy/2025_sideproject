@@ -38,6 +38,12 @@ spring:
 logging:
   level:
     org.hibernate.SQL: DEBUG
+server:
+  servlet:
+    encoding:
+      force: true
+      charset: UTF-8
+      enabled: true
 ---
 
 spring:
@@ -88,3 +94,8 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
+
+openai:
+  secret: ${GPT_KEY}
+  model: "gpt-4o"
+  endpoint: "https://api.openai.com/v1/chat/completions"

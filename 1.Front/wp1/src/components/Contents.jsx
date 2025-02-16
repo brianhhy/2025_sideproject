@@ -4,14 +4,15 @@ import { Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import { useNavigate } from "react-router-dom";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import AUTH_API from "../utils/api/AUTH_API";
-import {ChangeEvent} from "react";
 import {uploadFile} from "../utils/contents/uploadUtil";
-import {getFilesForMenu, getFileUrl} from "../utils/contents/getDataUtil";
+import {
+  getFilesFromMenuItem,
+  getFileToText
+} from "../utils/contents/getDataUtil";
 import {getRandomColor} from "../utils/contents/colorUtils";
 import {createFolder, deleteFolder, renameFolder} from "../utils/contents/fetchDataUtil"; // Material-UI 아이콘 가져오기
 
-const Contents = ({ menuItems,fetchMenuItems }) => {
+const Contents = ({ menuItems,fetchMenuItems,setMenuItems }) => {
   const [breadcrumb, setBreadcrumb] = useState(["내 책장"]); // Breadcrumb 상태
   const [activeContent, setActiveContent] = useState(null); // Sidebar에서 전달된 콘텐츠
   const [colorMap, setColorMap] = useState({}); // 색상 저장 상태
@@ -21,7 +22,7 @@ const Contents = ({ menuItems,fetchMenuItems }) => {
   const [renamingItem, setRenamingItem] = useState(null); // 이름 변경 상태
   const [newName, setNewName] = useState(""); // 새로운 이름 상태
   const [deletingItem, setDeletingItem] = useState(null); // 삭제 상태
-  const [currentFolderInfo, setCurrentFolderInfo] = useState(null); // 현재 폴더 상태
+  const [currentFolderInfo, setCurrentFolderInfo] = useState(null); // 현재 폴더 상태{menuId, menuName, dates}
   const [activeBook, setActiveBook] = useState(null);
   const [selectedSubItem, setSelectedSubItem] = useState(null); // 클릭한 subItem을 저장하는 상태
   const [isNewFolderOpen, setIsNewFolderOpen] = useState(false);
@@ -35,11 +36,19 @@ const Contents = ({ menuItems,fetchMenuItems }) => {
   useEffect(() => {
     const initialColorMap = {};
     menuItems.forEach((menuItem) => {
-      menuItem.subItems.forEach((subItem) => {
-        initialColorMap[subItem] = getRandomColor();
+      menuItem.files.forEach((file) => {
+        initialColorMap[file.fileId] = getRandomColor();
       });
     });
     setColorMap(initialColorMap);
+  }, [menuItems]);
+
+  useEffect(() => {
+    if (currentFolderInfo?.menuId) {
+      const updatedFiles = getFilesFromMenuItem(currentFolderInfo.menuId, menuItems);
+      // console.log("📂 `menuItems` 변경 감지 후 최신 파일 리스트 업데이트:", updatedFiles);
+      setFileItems([...updatedFiles]);
+    }
   }, [menuItems]);
 
 
@@ -55,33 +64,43 @@ const Contents = ({ menuItems,fetchMenuItems }) => {
     setSelectedFile(file); // 상태 업데이트
 
     // ✅ 파일 업로드 실행
-    const success = await uploadFile(file, currentFolderInfo.menuId);
+    const res = await uploadFile(file,null, currentFolderInfo.menuId);
 
-    if (success) {
+    if (res) {
       alert("파일 업로드 성공!");
+      await fetchMenuItems();
       handleMenuClick(currentFolderInfo.menuId,currentFolderInfo.menuName, currentFolderInfo.dates)
-      fetchMenuItems();
     } else {
       alert("파일 업로드 중 오류가 발생했습니다.");
     }
   };
 
-  const handleMenuClick = async (menuId, menuName, dates) => {
-    console.log("📌 handleMenuClick 호출됨:", menuId, menuName, dates);
 
-    setBreadcrumb(["내 책장", menuName]); // Breadcrumb 업데이트
-    setCurrentFolderInfo({ menuId, menuName, dates });
 
-    // ✅ 유틸 함수에서 파일 데이터 가져오기
-    const transformedFiles = await getFilesForMenu(menuId);
+  const handleMenuClick = async (folderId, folderName, dates) => {
+    console.log("handleMenuClick 호출");
 
-    // ✅ 상태 업데이트
+    // ✅ Breadcrumb 업데이트
+    setBreadcrumb(["내 책장", folderName]);
+    setCurrentFolderInfo({ menuId: folderId, menuName: folderName, dates });
+
+    // ✅ 최신 menuItems 가져오기
+    // await fetchMenuItems();
+
+    // ✅ fetchMenuItems() 실행 후 최신 menuItems에서 해당 folderId의 파일 가져오기
+    const updatedFiles = getFilesFromMenuItem(folderId, menuItems);
+    // console.log("📂 최신화된 파일 리스트: ", JSON.stringify(updatedFiles, null, 2));
+
+    // ✅ 파일 리스트 업데이트
     setActiveContent(1);
-    setFileItems(transformedFiles);
+    setFileItems([...updatedFiles]);
   };
+
+
 
 // ✅ fileItems를 활용하여 화면 렌더링
   useEffect(() => {
+    console.log("fileItems useEffect 시작");
     if (activeContent !== null) { // activeContent가 있을 때만 업데이트
       setActiveContent(
           <div className="flex flex-wrap items-start justify-start gap-4 p-4 w-full">
@@ -99,7 +118,7 @@ const Contents = ({ menuItems,fetchMenuItems }) => {
 
                   {/* 파일 정보 */}
                   <div className="flex flex-col justify-center items-center w-full h-full">
-                    <span className="text-lg font-bold text-gray-800">{subItem.name}</span>
+                    <span className="text-lg font-bold text-gray-800">{subItem.fileName}</span>
                     <span className="text-sm text-gray-500">{subItem.createdTime}</span>
                   </div>
                 </div>
@@ -120,7 +139,7 @@ const Contents = ({ menuItems,fetchMenuItems }) => {
 
 
   const handleBookClick = async (subItems = [], dates = []) => {
-    // console.log("클릭된 SubItems:", subItems[0]);
+    console.log("클릭된 SubItems:", subItems[0]);
     // console.log("클릭된 Dates:", dates);
 
     //해당 pdf 주소 전달
@@ -130,10 +149,11 @@ const Contents = ({ menuItems,fetchMenuItems }) => {
     }
 
     const fileId = subItems[0].fileId;
-    const fileUrl = await getFileUrl(fileId);
 
-    if (fileUrl) {
-      window.open(fileUrl, "_blank"); // ✅ 새 창에서 PDF 열기
+    if (fileId) {
+      // localStorage.setItem("savedSections", fileText); // 데이터 저장
+      navigate(`/memo/docs/${currentFolderInfo.menuId}/${fileId}`);
+      // window.open(fileUrl, "_blank"); // ✅ 새 창에서 PDF 열기
     } else {
       alert("파일을 열 수 없습니다. 관리자에게 문의하세요.");
     }
@@ -191,11 +211,12 @@ const Contents = ({ menuItems,fetchMenuItems }) => {
     setBreadcrumb(["내 책장"]); // Breadcrumb 초기화
     setActiveContent(null); // Content 초기화
     setPdfUrl(null); // PDF 초기화
-    fetchMenuItems();
+    // fetchMenuItems();
   };
 
   // MoreVertIcon 클릭 처리
   const handleMoreVertClick = (menuItem) => {
+    console.log(`handleMoreVertClick current menuItem = ${menuItem.folderId}`);
     setMenuOptions(menuItem);
   };
 
@@ -210,10 +231,10 @@ const Contents = ({ menuItems,fetchMenuItems }) => {
   // 이름 변경 확인 처리
   const handleRenameConfirm = async () => {
     if (!renamingItem) return; // ✅ 수정할 항목이 없으면 종료
-    console.log(`이름 변경: ${renamingItem.name} -> ${newName}`);
+    console.log(`이름 변경: ${renamingItem.folderName} -> ${newName}`);
 
     // ✅ API 호출 (유틸 함수 활용)
-    const success = await renameFolder(renamingItem.id, newName);
+    const success = await renameFolder(renamingItem.folderId, newName);
 
     if (success) {
       alert("이름 변경 성공!");
@@ -233,7 +254,7 @@ const Contents = ({ menuItems,fetchMenuItems }) => {
     if (!deletingItem) return; // ✅ 삭제할 항목이 없으면 종료
 
     // ✅ API 호출 (유틸 함수 활용)
-    const success = await deleteFolder(deletingItem.id);
+    const success = await deleteFolder(deletingItem.folderId);
 
     if (success) {
       alert("삭제 성공!");
@@ -302,9 +323,9 @@ const Contents = ({ menuItems,fetchMenuItems }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 w-full">
               {menuItems.map((menuItem) => (
                 <div
-                  key={menuItem.id}
+                  key={menuItem.folderId}
                   className="relative flex flex-col items-center p-2 bg-white cursor-pointer border border-gray-200 rounded-lg shadow-md hover:shadow-lg transition-transform transform hover:scale-105 w-full max-w-[250px] h-[300px] overflow-hidden"
-                  onClick={() => handleMenuClick(menuItem.id,menuItem.name, menuItem.date)}
+                  onClick={() => handleMenuClick(menuItem.folderId,menuItem.folderName,null)}
                 >
                   <div className="absolute top-2 right-2">
                     <MoreVertIcon
@@ -316,24 +337,24 @@ const Contents = ({ menuItems,fetchMenuItems }) => {
                     />
                   </div>
                   <h2 className="text-lg font-semibold text-gray-800 mb-2 text-center w-full truncate">
-                    {menuItem.name}
+                    {menuItem.folderName}
                   </h2>
                   {/* 🛠 subItems 요소 추가 */}
                   <div className="flex flex-wrap items-center justify-center gap-1 w-full h-full overflow-hidden">
-                    {menuItem.subItems.map((subItem, subIndex) => (
+                    {menuItem.files.slice(0,3).map((file, subIndex) => (
                       <div
                         key={subIndex}
                         className="flex items-center justify-center text-white text-sm font-medium rounded-md w-[30%] h-[200px] cursor-pointer"
                         style={{
-                          backgroundColor: colorMap[subItem],
+                          backgroundColor: colorMap[file.fileId],
                           writingMode: "vertical-rl",
                           textOrientation: "upright",
                         }}
                         onClick={() =>
-                          handleBookClick(menuItem.subItems, menuItem.date)
+                          handleMenuClick(menuItem.folderId,menuItem.folderName,null)
                         }
                       >
-                        {subItem}
+                        {file.fileName}
                       </div>
                     ))}
                   </div>
@@ -376,6 +397,7 @@ const Contents = ({ menuItems,fetchMenuItems }) => {
             </div>
           </div>
         )}
+
 
         {/* 메뉴 옵션 */}
         {menuOptions && (
@@ -428,7 +450,7 @@ const Contents = ({ menuItems,fetchMenuItems }) => {
             {/* 새 노트 추가 버튼 */}
             <button
                 className="bg-blue-500 text-white px-4 py-2 rounded-lg mb-4 w-full"
-                onClick={() => navigate("/memo/docs")} // 새 노트 추가 라우팅
+                onClick={() => navigate(`/memo/docs/${currentFolderInfo.menuId}`)} // 새 노트 추가 라우팅`
             >
               새 노트 추가
             </button>

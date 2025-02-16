@@ -8,7 +8,7 @@ import {getRandomColor} from "./colorUtils";
 export const getMenuItems = async () => {
     try {
         // 백엔드 API 요청
-        const response = await AUTH_API.post("/api/user/upload/findFolder", {
+        const response = await AUTH_API.post("/api/user/upload/findFolder2", {
             parentFolderId: null
         });
 
@@ -17,16 +17,8 @@ export const getMenuItems = async () => {
         // API 응답에서 데이터 추출
         const folderList = response.data.data || [];
 
-        // `FolderResponseDto`를 `menuItems` 형태로 변환
-        const transformedData = folderList.map((folder) => ({
-            id: folder.folderId,
-            name: folder.folderName,
-            subItems: folder.fileNames ? folder.fileNames.slice(0, 3) : [],
-            date: folder.updatedAt ? [folder.updatedAt] : [],
-        }));
-
-        console.log("📌 Transformed Data:", transformedData);
-        return transformedData; // ✅ 변환된 데이터 반환
+        // console.log("📂MenuItems 최신화 완료 ", JSON.stringify(folderList, null, 2));
+        return folderList; // ✅ 변환된 데이터 반환
     } catch (err) {
         console.error("❌ 메모 데이터를 불러오는 중 오류 발생:", err);
 
@@ -104,3 +96,50 @@ export const getFileUrl = async (fileId) => {
         return null;
     }
 };
+
+/*
+ * returns {string | null}
+ */
+export const getFileToText = async (fileId) => {
+    if(fileId != null){
+        try {
+            const response = await AUTH_API.get("/api/user/upload/getFileToText", {
+                params: { fileId }
+            });
+
+            const { data, success, message } = response.data;
+
+            if (success) {
+                console.log("📂 파일 텍스트 받음");
+                // console.log("받은 텍스트: ",data);
+                return data;
+            } else {
+                console.error("❌ 파일 텍스트 요청 실패:", message);
+                return null;
+            }
+        } catch (error) {
+            console.error("❌ 파일 텍스트 요청 오류:", error.message);
+            return null;
+        }
+    }
+    return "";
+
+};
+
+export const getFilesFromMenuItem = (folderId, menuItems) => {
+    // console.log("🔍 최신 menuItems 확인:", menuItems);
+
+    // ✅ menuItems가 배열인지 확인 후 진행
+    if (!Array.isArray(menuItems)) {
+        console.warn("⚠ menuItems가 배열이 아님. 빈 배열 반환");
+        return [];
+    }
+
+    // ✅ `menuItems`에서 `folderId`에 해당하는 항목 찾기
+    const menuItem = menuItems.find(item => item.folderId === folderId);
+
+    // ✅ 해당 폴더가 존재하면 파일 리스트 반환, 없으면 빈 배열 반환
+    return menuItem && Array.isArray(menuItem.files) ? menuItem.files : [];
+};
+
+

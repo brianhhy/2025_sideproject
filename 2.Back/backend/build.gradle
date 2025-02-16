@@ -52,6 +52,11 @@ dependencies {
 	//cookie
 	implementation 'org.springframework.session:spring-session-core'
 
+
+	implementation 'org.springframework.boot:spring-boot-starter-json'
+	implementation 'com.fasterxml.jackson.core:jackson-databind' // JSON 데이터 바인딩을 위한 Jackson 라이브러리
+	implementation("org.springframework.boot:spring-boot-starter-webflux") // WebClient 사용 시 필요
+
 	// H2 데이터베이스 (테스트용 또는 개발용)
 	runtimeOnly 'com.h2database:h2'
 

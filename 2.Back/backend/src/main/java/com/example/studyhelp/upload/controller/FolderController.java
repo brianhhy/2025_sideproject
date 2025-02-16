@@ -8,6 +8,7 @@ import com.example.studyhelp.upload.repository.FolderRepository;
 import com.example.studyhelp.upload.request.CreateFolderRequest;
 import com.example.studyhelp.upload.request.FindFolderRequest;
 import com.example.studyhelp.upload.request.RenameFolderRequest;
+import com.example.studyhelp.upload.response.FolderDataResponseDto;
 import com.example.studyhelp.upload.response.FolderResponseDto;
 import com.example.studyhelp.upload.service.FolderService;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,21 @@ public class FolderController{
 
         return ResponseEntity.ok(new ApiResponseWrapper<>(folderInfo, true, null));
     }
+
+    @PostMapping("/findFolder2")
+    public ResponseEntity<ApiResponseWrapper<List<FolderDataResponseDto>>> findFolder2(@RequestBody FindFolderRequest request, @AuthenticationPrincipal UserDetails userDetails){
+
+        Member member = memberService.findByUserName(userDetails.getUsername());
+        if (member == null) {
+            throw new MemberNotFoundException();
+        }
+
+        List<FolderDataResponseDto> folderInfo = folderService.findFolder2(request, member.getId());
+        return ResponseEntity.ok(new ApiResponseWrapper<>(folderInfo, true, null));
+    }
+
+
+
 
     @PostMapping("/createFolder")
     public ResponseEntity<ApiResponseWrapper<Boolean>> createFolder(@RequestBody CreateFolderRequest request, @AuthenticationPrincipal UserDetails userDetails){

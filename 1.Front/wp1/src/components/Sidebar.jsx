@@ -23,13 +23,13 @@ const Sidebar = ({ menuItems, onMenuItemClick,onHomeClick,onContentLoad }) => {
     setOpenIndex((prevOpenIndex) => (prevOpenIndex === index ? null : index));
 
     if (onMenuItemClick) {
-      onMenuItemClick(menuItems[index].id, menuItems[index].name,menuItems[index].date);
+      onMenuItemClick(menuItems[index].folderId, menuItems[index].folderName,null);
     }
 
     if (onContentLoad) {
       onContentLoad(
           <div className="flex flex-wrap items-center justify-center w-full h-full gap-4 p-4">
-            {menuItems[index].subItems.map((subItem, subIndex) => (
+            {menuItems[index].files.map((file, subIndex) => (
                 <div
                     key={subIndex}
                     className="w-[200px] h-[300px] border border-gray-300 rounded-lg shadow-md flex flex-col items-center relative"
@@ -37,7 +37,7 @@ const Sidebar = ({ menuItems, onMenuItemClick,onHomeClick,onContentLoad }) => {
                   <div className="absolute top-0 left-0 w-8 h-full bg-red-500 rounded-l-lg"></div>
                   <div className="flex flex-col justify-center items-center w-full h-full">
                 <span className="text-lg font-bold text-gray-800 mt-2">
-                  {subItem}
+                  {file.fileName}
                 </span>
                   </div>
                 </div>
@@ -97,14 +97,15 @@ const Sidebar = ({ menuItems, onMenuItemClick,onHomeClick,onContentLoad }) => {
                         activeIndex === index ? "text-blue-600" : "text-gray-500"
                     }`}
                 >
-                  {menuItem.name}
+                  {menuItem.folderName}
                 </span>
                   </div>
                   {openIndex === index && (
                       <div className="ml-8 mt-2 flex flex-col">
-                        {menuItem.subItems.map((subItem, subIndex) => (
-                            <div key={subIndex} className="py-1 text-gray-700">
-                              {subItem}
+                        {menuItem.files.map((file, subIndex) => (
+                            <div key={subIndex} className="py-1 text-gray-700"
+                                 onClick={() => navigate(`/memo/docs/${menuItem.folderId}/${file.fileId}`)}>
+                              {file.fileName}
                             </div>
                         ))}
                       </div>

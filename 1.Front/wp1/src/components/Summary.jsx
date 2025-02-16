@@ -16,6 +16,39 @@ const Document = () => {
   const [modalVisible, setModalVisible] = useState(false); // 모달 창 상태
   const [progress, setProgress] = useState(0); // 로딩바 상태
   const navigate = useNavigate();
+
+
+  // ✅ `localStorage`에서 SummaryResponse를 가져와 `sections`에 적용
+  useEffect(() => {
+    const loadSummary = async () => {
+      const storedSummary = localStorage.getItem("SummaryResponse");
+      if (storedSummary) {
+        try {
+          let resolvedSummary = storedSummary;
+
+          // ✅ `storedSummary`가 Promise인 경우, JSON 문자열인지 확인 후 변환
+          if (typeof storedSummary === "string" && storedSummary.startsWith("{")) {
+            resolvedSummary = JSON.parse(storedSummary);
+          }
+
+          if (typeof resolvedSummary === "string") {
+            setSections([resolvedSummary]); // ✅ `sections`는 배열이므로 변환
+          } else if (Array.isArray(resolvedSummary)) {
+            setSections(resolvedSummary);
+          } else {
+            console.error("🚨 저장된 SummaryResponse가 올바른 형식이 아닙니다:", resolvedSummary);
+          }
+        } catch (error) {
+          console.error("🚨 SummaryResponse 파싱 오류:", error);
+        }
+      }
+    };
+
+    loadSummary();
+  }, []);
+
+
+
   // 섹션 내용 변경 핸들러
   const handleContentChange = (index, event) => {
     const newSections = [...sections];

@@ -43,6 +43,7 @@ Google Cloud Storage를 사용하여 파일 업로드 및 관리합니다.
 build.gradle 우클릭후 Link Gradle Project 클릭
 
 ##### ✅02/16 Contents -> Document -> Summary 데이터 이동 추가
+요약하기,저장하고나가기,새노트추가(저장하고나가기),노트 불러오기 구현
 pdf같은 파일 그냥 txt로 강제변환해서 저장되게 해놈
 Document에서 요약해서 Summary 가는건 일단 Chatgpt Response 받아서 내용만
 가게 설정해놨습니다. 주제 이런거 형식 일단 안해놈

@@ -28,7 +28,7 @@ show tables;    -- 테이블 목록 확인
 🔹 2️⃣ Cloud Storage 적용
 Google Cloud Storage를 사용하여 파일 업로드 및 관리합니다.
 
-📂 서버 내부 필수 파일(ksj 브랜치): https://drive.google.com/file/d/18YtPMlkyFZl0GrOySOj65ldGyKoj8Q4x/view?usp=drive_link
+📂 서버 내부 필수 파일: https://drive.google.com/file/d/1sUTliDHTrA8XIuhxxxdXNAo3e-nRvj2Q/view?usp=sharing
 백엔드: backend/resources/google_cloud_storage_key.json  
 프로젝트 최상단 루트: 2025_sideproject/.env  
   

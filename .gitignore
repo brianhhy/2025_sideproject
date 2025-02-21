@@ -1,0 +1,38 @@
+# Ignore .env file (Environment variables file)
+.env
+
+# IntelliJ IDEA files
+*.iml
+*.iws
+*.ipr
+
+# VS Code files
+.vscode/
+
+# Build and dependency directories
+build/
+.gradle/
+out/
+
+# Gradle wrapper files
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+#google key
+google_cloud_storage_key.json
+
+# JetBrains specific
+.idea/
+
+# Eclipse-specific files
+.project
+.classpath
+.factorypath
+.settings/
+
+# MacOS specific files
+.DS_Store
+
+# Windows specific files
+Thumbs.db

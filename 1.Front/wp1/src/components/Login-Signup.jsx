@@ -6,7 +6,7 @@ import {NO_AUTH_API} from "../utils/api/NO_AUTH_API";
 import { Cookies } from 'react-cookie';
 import {API_CLIENT_URL, API_SERVER_URL} from "../config"; // 쿠키 사용
 
-const LoginSignup = () => {
+const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const cookies = new Cookies(); // 쿠키 객체 생성
 
@@ -246,4 +246,4 @@ const LoginSignup = () => {
   );
 };
 
-export default LoginSignup;
+export default Login;

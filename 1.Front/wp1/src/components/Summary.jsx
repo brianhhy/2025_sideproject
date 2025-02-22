@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // React Router의 useNavigate 가져오기
-import MicIcon from "@mui/icons-material/Mic";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import PauseIcon from "@mui/icons-material/Pause";
-import StopIcon from "@mui/icons-material/Stop";
-import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
-const Document = () => {
+const Summary = () => {
   const [sections, setSections] = useState([""]); // 여러 섹션 상태
   const [menuVisible, setMenuVisible] = useState(false); // Speed Dial 메뉴 상태
   const [textColor, setTextColor] = useState("black"); // 글씨 색 상태
@@ -16,6 +11,39 @@ const Document = () => {
   const [modalVisible, setModalVisible] = useState(false); // 모달 창 상태
   const [progress, setProgress] = useState(0); // 로딩바 상태
   const navigate = useNavigate();
+
+
+  // ✅ `localStorage`에서 SummaryResponse를 가져와 `sections`에 적용
+  useEffect(() => {
+    const loadSummary = async () => {
+      const storedSummary = localStorage.getItem("SummaryResponse");
+      if (storedSummary) {
+        try {
+          let resolvedSummary = storedSummary;
+
+          // ✅ `storedSummary`가 Promise인 경우, JSON 문자열인지 확인 후 변환
+          if (typeof storedSummary === "string" && storedSummary.startsWith("{")) {
+            resolvedSummary = JSON.parse(storedSummary);
+          }
+
+          if (typeof resolvedSummary === "string") {
+            setSections([resolvedSummary]); // ✅ `sections`는 배열이므로 변환
+          } else if (Array.isArray(resolvedSummary)) {
+            setSections(resolvedSummary);
+          } else {
+            console.error("🚨 저장된 SummaryResponse가 올바른 형식이 아닙니다:", resolvedSummary);
+          }
+        } catch (error) {
+          console.error("🚨 SummaryResponse 파싱 오류:", error);
+        }
+      }
+    };
+
+    loadSummary();
+  }, []);
+
+
+
   // 섹션 내용 변경 핸들러
   const handleContentChange = (index, event) => {
     const newSections = [...sections];
@@ -126,7 +154,7 @@ const Document = () => {
         />
         <div className="mt-auto"> {/* Sidebar 하단에 고정 */}
           <button
-            onClick={() => navigate("/memo/docs/questions")} // 문제 생성 페이지로 이동
+            onClick={() => navigate("/memo/docs/summary/questions")} // 문제 생성 페이지로 이동
             className="w-full py-3 bg-blue-500 text-white text-lg font-semibold rounded-md hover:bg-blue-700 transition duration-300"
           >
             문제 생성하기 →
@@ -137,4 +165,4 @@ const Document = () => {
   );
 };
 
-export default Document;
+export default Summary;

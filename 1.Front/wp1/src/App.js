@@ -91,6 +91,8 @@ const App = () => {
                 />
                 <Route path="/login" element={<LoginSignup />} />
                 <Route path="/loginTest" element={<LoginTest />} />
+                <Route path="/login" element={<LoginSignup />} />
+                <Route path="/loginTest" element={<LoginTest />} />
                 <Route
                     path="/memo/docs/:folderId/:fileId"
                     element={<Document

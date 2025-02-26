@@ -31,12 +31,20 @@ public class ChatGptService {
     @Value("${openai.endpoint}")
     private String apiEndpoint;
 
-    private static final String SYSTEM_PROMPT =
+    private static final String SYSTEM_SUMMARY_PROMPT =
             "다음 내용을 핵심만 남기고 요약해줘:\n\n";
+
+    private static final String SYSTEM_QUIZ_PROMPT =
+            "아래에 나온 요약내용을 바탕으로 문제 5개를 생성해주세요." +
+                    "예시의 JSON 배열을 반환 잡설 없이 JSON 데이터만 출력\n" +
+                    "\n" +
+                    "[\n" +
+                    "  {\"question\":\"문제 내용\",\"options\":[\"답1\",\"답2\",\"답3\",\"답4\"],\"answerIndex\":0},\n" +
+                    "]\n";
 
     // 메시지 입력받고 챗gpt의 응답을 리턴하는 메서드
     // ✅ ChatGPT API 요청을 보내고 응답을 반환하는 메서드
-    public String chat(String message) {
+    public String chat(String message,String type) {
 
         // 🚀 1. HTTP 헤더 설정
         HttpHeaders headers = new HttpHeaders();
@@ -47,8 +55,16 @@ public class ChatGptService {
         // 🚀 2. 요청 JSON 데이터 구성
         JSONObject messageUser = new JSONObject();
         messageUser.put("role", "user");
-        messageUser.put("content", SYSTEM_PROMPT + message);
 
+        if(type.equals("summary")){
+            messageUser.put("content", SYSTEM_SUMMARY_PROMPT + message);
+        }
+        else if(type.equals("quiz")){
+            messageUser.put("content", SYSTEM_QUIZ_PROMPT + message);
+        }
+        else{
+            throw new ChatGptApiErrorException();
+        }
         JSONArray messages = new JSONArray();
         messages.add(messageUser);
 

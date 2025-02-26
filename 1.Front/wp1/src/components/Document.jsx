@@ -9,11 +9,9 @@ import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import {getFileToText} from "../utils/contents/getDataUtil";
 import {saveFile} from "../utils/contents/uploadUtil";
-import {getResponse, getResponseTest} from "../utils/summary/gptRequest";
+import {getGptResponse} from "../utils/summaryandquiz/gptRequest";
 import { useReactMediaRecorder } from "react-media-recorder";
-import { ReactMediaRecorder } from "react-media-recorder";
 import AUTH_API from "../utils/api/AUTH_API";
-import axios from "axios";
 
 const Document = ({ menuItems, setMenuItems, fetchMenuItems }) => {
   const [sections, setSections] = useState([""]); // 여러 섹션 상태
@@ -24,15 +22,13 @@ const Document = ({ menuItems, setMenuItems, fetchMenuItems }) => {
   const [progress, setProgress] = useState(0); // 로딩바 상태
   const [showConfirmation, setShowConfirmation] = useState(false); // 확인창 상태
   const { folderId,fileId } = useParams(); // ✅ URL에서 fileId 가져오기
-  const [selectedFolder, setSelectedFolder] = useState(null); // 현재 선택된 폴더
-  const [selectedFiles, setSelectedFiles] = useState([]); // 선택된 폴더 내 파일 목록
   const { startRecording, stopRecording, mediaBlobUrl } = useReactMediaRecorder({ audio:true });//녹음 시작,종료,재생기
   const [isRecording, setIsRecording] = useState(false);//녹음 상태확인
   const [selectedFile, setSelectedFile] = useState(null); //파일 선택
-  const [resp, setResp] = useState("");
   const hasRequested = useRef(false); // ✅ API 요청 여부를 추적하는 변수
   const navigate = useNavigate();
   const audioRef = useRef(null);
+
   // 섹션 내용 변경 핸들러
   const handleContentChange = (index, event) => {
     const newSections = [...sections];
@@ -71,7 +67,7 @@ const Document = ({ menuItems, setMenuItems, fetchMenuItems }) => {
     setShowConfirmation(false); // 확인 창 닫기
     setModalVisible(true); // 로딩 창 열기
 
-    const response = await getResponse(JSON.stringify(sections)); // ✅ Promise 해결 후 response 받기
+    const response = await getGptResponse(JSON.stringify(sections),"summary"); // ✅ Promise 해결 후 response 받기
     console.log("🚀 요약된 결과:", response);
 
     if (response) {
@@ -124,6 +120,7 @@ const Document = ({ menuItems, setMenuItems, fetchMenuItems }) => {
   const checkMediaBlobUrl = () => {
     console.log("현재 mediaBlobUrl 상태 :",mediaBlobUrl);
   };
+
   // 녹음 시작
   const handleStartRecording = () => {
     console.log("🎤 녹음 시작!");
@@ -220,8 +217,7 @@ const Document = ({ menuItems, setMenuItems, fetchMenuItems }) => {
       return () => setProgress(0); // 모달이 닫히면 progress 초기화
     }
   }, [modalVisible]);
-  
-    useEffect(() => {
+  useEffect(() => {
       if (mediaBlobUrl) {
         fetch(mediaBlobUrl)
           .then(res => res.blob())
@@ -242,11 +238,6 @@ const Document = ({ menuItems, setMenuItems, fetchMenuItems }) => {
     }
   }, [progress, navigate]);
 
-useEffect(() => {
-    if(resp !== undefined){
-        console.log("useEffect 작동");
-        }
-  },[resp]);
   return (
       <div className="flex w-full h-screen bg-gray-200 relative">
         {/* Left Sidebar

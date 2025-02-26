@@ -9,7 +9,7 @@ import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import {getFileToText} from "../utils/contents/getDataUtil";
 import {saveFile} from "../utils/contents/uploadUtil";
-import {getResponse, getResponseTest} from "../utils/summary/gptRequest";
+import {getGptResponse} from "../utils/summaryandquiz/gptRequest";
 const Document = ({ menuItems, setMenuItems, fetchMenuItems }) => {
   const [sections, setSections] = useState([""]); // 여러 섹션 상태
   const [menuVisible, setMenuVisible] = useState(false); // Speed Dial 메뉴 상태
@@ -62,7 +62,7 @@ const Document = ({ menuItems, setMenuItems, fetchMenuItems }) => {
     setShowConfirmation(false); // 확인 창 닫기
     setModalVisible(true); // 로딩 창 열기
 
-    const response = await getResponse(JSON.stringify(sections)); // ✅ Promise 해결 후 response 받기
+    const response = await getGptResponse(JSON.stringify(sections),"summary"); // ✅ Promise 해결 후 response 받기
     console.log("🚀 요약된 결과:", response);
 
     if (response) {

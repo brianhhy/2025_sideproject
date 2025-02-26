@@ -11,4 +11,6 @@ import java.util.List;
 public class GptPromptRequest {
     @JsonProperty("prompt")
     private String prompt;
+    @JsonProperty("type")
+    private String type;
 }

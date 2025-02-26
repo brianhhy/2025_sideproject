@@ -47,8 +47,17 @@ build.gradle 우클릭후 Link Gradle Project 클릭
 pdf같은 파일 그냥 txt로 강제변환해서 저장되게 해놈
 Document에서 요약해서 Summary 가는건 일단 Chatgpt Response 받아서 내용만
 가게 설정해놨습니다. 주제 이런거 형식 일단 안해놈
-
 .env파일 변경되었습니다.
+
+
+##### ✅02/26 Question,review 기능 추가
+요약된 내용을 바탕으로 문제 생성 및 답확인(review) 기능 구현
+간단하게 문제 5개만 만들어주게 해놈
+gpt => 내용요약(summary),퀴즈생성(question) 에서 두번 사용됨
+question 페이지 리다이렉트 못하게 해놈 (퀴즈생성 계속해서)
+question쓰려면 파일 들어가서 요약후 문제생성 
+
+
 
 
 

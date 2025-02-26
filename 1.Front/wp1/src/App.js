@@ -9,6 +9,8 @@ import PdfViewerTest from "./components/PdfViewerTest";
 import {getMenuItems} from "./utils/contents/getDataUtil";
 import LoginTest from "./components/Login-Test";
 import Summary from "./components/Summary";
+import Questions from "./components/Questions";
+import Review from "./components/Review";
 // PDF.js Worker 설정
 pdfjs.GlobalWorkerOptions.workerSrc = `public/pdf.worker.min.js`;
 
@@ -89,6 +91,8 @@ const App = () => {
                 />
                 <Route path="/login" element={<LoginSignup />} />
                 <Route path="/loginTest" element={<LoginTest />} />
+                <Route path="/login" element={<LoginSignup />} />
+                <Route path="/loginTest" element={<LoginTest />} />
                 <Route
                     path="/memo/docs/:folderId/:fileId"
                     element={<Document
@@ -106,6 +110,8 @@ const App = () => {
                     />}
                 />
                 <Route path="/memo/docs/summary" element={<Summary />} />
+                <Route path="/memo/docs/summary/questions" element={<Questions />}/>
+                <Route path="/memo/docs/summary/questions/review" element={<Review />}/>
             </Routes>
         </Router>
     );
